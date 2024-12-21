@@ -6,10 +6,10 @@ from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated , AllowAny , IsAdminUser
 from rest_framework import status ,viewsets, permissions
 from rest_framework.response import Response
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView  
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Package, PackageOrder
-from .serializers import PackageSerializer, PackageOrderSerializer
+from .serializers import PackageSerializer, PackageOrderSerializer , GetAllOrdersSerializer
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 
@@ -103,4 +103,23 @@ class PackageOrderViewSet(ModelViewSet):
             serializer.save(user=user, name=user.username, email=user.email)
         else:
             serializer.save()
+            
+    @action(detail=False, methods=['get'], url_path='my-orders', url_name='my-orders')
+    def my_orders(self, request):
+        """
+        Retrieve all orders for the logged-in user.
+        """
+        user = request.user
+        orders = PackageOrder.objects.filter(user=user)
+        serializer = PackageOrderSerializer(orders, many=True)
+        return Response(serializer.data)
 
+
+class GetAllOrders(ListAPIView):
+    """
+    Handles listing all orders.
+    """
+    queryset = PackageOrder.objects.all()
+    serializer_class = GetAllOrdersSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]  # Only admin users can view all orders

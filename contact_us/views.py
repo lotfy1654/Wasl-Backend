@@ -14,18 +14,20 @@ from .serializers import ContactUsSerializer
 class ListContactUs(ListAPIView):
     queryset = ContactUs.objects.all()
     serializer_class = ContactUsSerializer
+    permission_classes = [IsAuthenticated , IsAdminUser]
+    authentication_classes = [JWTAuthentication]
 
 class RetrieveContactUs(RetrieveAPIView):
     queryset = ContactUs.objects.all()
     serializer_class = ContactUsSerializer
+    permission_classes = [IsAuthenticated , IsAdminUser]
+    authentication_classes = [JWTAuthentication]
 
 
 
 class CreateContactUs(CreateAPIView):
     querset = ContactUs.objects.all()
     serializer_class = ContactUsSerializer
-    permission_classes = [IsAuthenticated , IsAdminUser]
-    authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PackageViewSet, PackageOrderViewSet , PackageByIdViewSet , PackageUpdateViewSet , CreatePackage , DeletePackage
+from .views import PackageViewSet, PackageOrderViewSet , PackageByIdViewSet , PackageUpdateViewSet , CreatePackage , DeletePackage , GetAllOrders
 
 urlpatterns = [
     # Endpoint to get all packages
@@ -22,4 +22,7 @@ urlpatterns = [
 
     # Endpoint to delete a single package by ID
     path('delete/<int:pk>', DeletePackage.as_view(), name='delete-package'),
+    
+    # Endpoint to get all orders
+    path('orders', GetAllOrders.as_view(), name='all-orders'),
 ]

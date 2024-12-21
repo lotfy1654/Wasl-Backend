@@ -23,12 +23,16 @@ class PackageOrder(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=15, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    id_package = models.CharField(max_length=100, blank=True)
 
     def clean(self):
         if not self.user and (not self.name or not self.email or not self.phone):
             raise ValidationError("Name, email, and phone must be provided if user is not logged in.")
 
     def save(self, *args, **kwargs):
+
+        ## get the id of the package
+        self.id_package = self.package.id
         if self.user:
             self.name = self.user.get_full_name() or self.user.username
             self.email = self.user.email

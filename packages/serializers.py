@@ -32,7 +32,8 @@ class PackageOrderSerializer(serializers.ModelSerializer):
             # If the user is logged in, populate the name, email, and phone from the user account
             validated_data['name'] = user.username
             validated_data['email'] = user.email
-            validated_data['phone'] = user.profile.phone if hasattr(user, 'profile') else ''  # Adjust based on your User model
+            # validated_data['phone'] = user.profile.phone if hasattr(user, 'profile') else ''  # Adjust based on your User model
+            validated_data['phone'] = user.phone  # Adjust based on your User model
             validated_data['user'] = user
         else:
             # Ensure all required fields are provided for non-authenticated users
@@ -40,3 +41,12 @@ class PackageOrderSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Name, email, and phone are required for non-authenticated users.")
 
         return super().create(validated_data)
+
+
+
+class GetAllOrdersSerializer(serializers.ModelSerializer):
+    # package = serializers.PrimaryKeyRelatedField(queryset=Package.objects.all())
+    # package = PackageSerializer()
+    class Meta:
+        model = PackageOrder
+        fields = ['id', 'user', 'package', 'name', 'email', 'phone', 'created_at']

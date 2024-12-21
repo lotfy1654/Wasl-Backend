@@ -14,9 +14,9 @@ class Header(models.Model):
 
 
 class WhyChooseUs(models.Model):
-    icon = models.CharField(max_length=100)  
     title = models.CharField(max_length=100) 
     description = models.TextField(max_length=1000)  
+    icon = models.CharField(max_length=100)  
     icons_img = models.ImageField(upload_to='icons_img/', null=True, blank=True)
 
     def __str__(self):
@@ -33,9 +33,10 @@ class Testimonial(models.Model):
     
 
 class SocialMedia(models.Model):
-    icon_social = models.CharField(max_length=100)
     social_name = models.CharField(max_length=100)
     link = models.URLField(max_length=200)
+    icon_social = models.CharField(max_length=100)
+    icon_color = models.CharField(max_length=100)
 
     def __str__(self):
         return self.social_name

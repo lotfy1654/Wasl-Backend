@@ -3,11 +3,25 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated 
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import RegisterSerializer, LoginSerializer , ChangePasswordSerializer ,GetUserSerializer , UpdateUserSerializer , RoleUpdateSerializer 
-from .models import AllUsers as User    
+from .serializers import RegisterSerializer, LoginSerializer , ChangePasswordSerializer ,GetUserSerializer , UpdateUserSerializer , RoleUpdateSerializer  , GetAllPersonInSystemSerializers
+from .serializers import EmployeeSerializer, EmployeeNameIdSerializer , CreateEmployeeSerializer
+# from .serializers import (
+#     PasswordResetRequestSerializer,
+#     PasswordResetVerifySerializer,
+#     PasswordResetSerializer
+# )
+from .models import AllUsers as User , Employee ,PasswordResetOTP
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.generics import ListAPIView , RetrieveAPIView , CreateAPIView , UpdateAPIView , DestroyAPIView
+# Reset Password OTP
+import pyotp
+from django.core.mail import send_mail
+from django.conf import settings
+from datetime import datetime, timedelta
+
 
 
 class RegisterView(APIView):
@@ -144,12 +158,27 @@ class GetUserData(APIView):
 
     def get(self, request):
         try:
-            serializer = GetUserSerializer(request.user)
+            # Pass the 'request' object to the serializer context
+            serializer = GetUserSerializer(request.user, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
+class GetAllPersonInSystem(ListAPIView):
+    """
+    API view to get all users in the system.
+    """
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    serializer_class = GetAllPersonInSystemSerializers
+    # def get(self, request):
+    #     if request.user.role != 'Admin':
+    #         return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+    #     users = User.objects.all()
+    #     serializer = GetAllPersonInSystemSerializers(users, many=True)
+    #     return Response(serializer.data)
+    
 
 class UpdateUserData(APIView):
     """
@@ -202,3 +231,143 @@ class UpdateUserRole(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    
+    
+
+class EmployeeListView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
+        employees = Employee.objects.all()
+        # Ensure the request object is passed in context
+        serializer = EmployeeSerializer(employees, many=True, context={'request': request})
+        return Response(serializer.data)
+
+class CreateEmployeeView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    def post(self, request):
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        serializer = CreateEmployeeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EmployeeDetailView(APIView):
+    
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    def get(self, request, pk):
+
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            employee = Employee.objects.get(pk=pk)
+            serializer = EmployeeSerializer(employee)
+            return Response(serializer.data)
+        except Employee.DoesNotExist:
+            return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            employee = Employee.objects.get(pk=pk)
+            serializer = EmployeeSerializer(employee, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Employee.DoesNotExist:
+            return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            employee = Employee.objects.get(pk=pk)
+            user = employee.user
+            user.role = 'User'
+            user.save()  # Ensure this saves to the database
+            employee.delete()
+            message = {'message': 'Employee deleted successfully'}
+            return Response(message , status=status.HTTP_204_NO_CONTENT)
+        except Employee.DoesNotExist:
+            return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
+class EmployeeNameIdView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    def get(self, request):
+        
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
+        employees = Employee.objects.all()
+        serializer = EmployeeNameIdSerializer(employees, many=True)
+        return Response(serializer.data)
+
+
+
+class GetAllRoleUserOnly(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        if request.user.role != 'Admin':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        
+        users = User.objects.filter(role='User')  # Filtering users with role 'User'
+        # Pass the request object in context
+        serializer = GetUserSerializer(users, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+
+
+# Forgot Password View (Send OTP)
+# class PasswordResetRequestView(APIView):
+#     def post(self, request):
+#         serializer = PasswordResetRequestSerializer(data=request.data)
+#         if serializer.is_valid():
+#             # OTP has been sent to the email address
+#             serializer.save()  # This triggers sending OTP email
+#             return Response({"detail": "OTP has been sent to your email."}, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# # Verify OTP
+# class PasswordResetVerifyView(APIView):
+#     def post(self, request):
+#         serializer = PasswordResetVerifySerializer(data=request.data)
+#         if serializer.is_valid():
+#             return Response({"detail": "OTP verified successfully."}, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# # Reset Password
+# class PasswordResetView(APIView):
+#     def post(self, request):
+#         serializer = PasswordResetSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()  # Reset the password
+#             return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

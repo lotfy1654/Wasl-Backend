@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-!ydksbv^4xa_jpo6q$rix7q@(e)zjy8n7mfr$8y7)jjkl&0-qw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 APPEND_SLASH = True
 
@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'django_filters',
     #Add Services App
     'our_service.apps.OurServiceConfig',
+    # Cors Headers
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +59,16 @@ INSTALLED_APPS = [
     'rest_framework',                # Django REST framework for building APIs
     'rest_framework_simplejwt',      # SimpleJWT for handling JWT authentication
 ]
+
+# CORS Headers Configuration
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "http://localhost:3000",
+]
+# Use CORS_ALLOW_ALL_ORIGINS = True for unrestricted access (not recommended for production).
+CORS_ALLOW_ALL_ORIGINS = True
+
+
 
 # REST Framework configuration with JWT authentication
 REST_FRAMEWORK = {
@@ -73,11 +85,10 @@ AUTH_USER_MODEL = 'auth_flow.AllUsers'
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),    # Access token valid for 5 minutes
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),    # Access token valid for 1 hour
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),      # Refresh token valid for 1 day
     'AUTH_HEADER_TYPES': ('Bearer',),                 # Use 'Bearer' in the Authorization header
 }
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -87,7 +98,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    # Cors Headers Middleware
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
 
 ROOT_URLCONF = 'waslBackendProject.urls'
@@ -155,8 +169,13 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Ensure this points to the directory with your custom static files (if any)
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -166,3 +185,33 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# pyotp settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Development use only
+
+# OR Use SMTP for production
+# settings.py
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # Or any SMTP service you're using
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'lotfymh9@gmail.com'  # Your email here
+# EMAIL_HOST_PASSWORD = '0987654321Mohamed$'  # App password or your real password
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# DEFAULT_FROM_EMAIL = 'lotfy1654@gmail.com'
+
+
+
+# For production use, you should use environment variables to store sensitive information
+
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = False  # For development; set to True when using HTTPS in production
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict' for stricter enforcement
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_SECURE = False  # For development; set to True for HTTPS in production
+
