@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-!ydksbv^4xa_jpo6q$rix7q@(e)zjy8n7mfr$8y7)jjkl&0-qw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["web-production-7993.up.railway.app"]
+ALLOWED_HOSTS = ["web-production-98c0.up.railway.app"]
 
 APPEND_SLASH = True
 
@@ -216,7 +216,7 @@ CSRF_COOKIE_SECURE = False  # For development; set to True when using HTTPS in p
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict' for stricter enforcement
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-7993.up.railway.app',  # Add your production URL here
+    'https://web-production-98c0.up.railway.app',  # Add your production URL here
     'http://127.0.0.1',  # Local development URL
     'http://localhost',  # Local development URL
 ]
