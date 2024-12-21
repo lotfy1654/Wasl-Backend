@@ -214,4 +214,3 @@ CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict' for stricter enforcement
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_SECURE = False  # For development; set to True for HTTPS in production
-
