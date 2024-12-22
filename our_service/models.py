@@ -27,9 +27,9 @@ class Service(models.Model):
         return self.name
 
 payment_status = [
-    ('pending', 'Pending'),
-    ('paid', 'Paid'),
     ('unpaid', 'Unpaid'),
+    ('in_progress', 'In Progress'),
+    ('paid', 'Paid'),
 ]
 
 # Service Step Model

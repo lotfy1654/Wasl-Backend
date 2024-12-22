@@ -2,7 +2,7 @@
 
 from django.urls import path
 from .views import RegisterView, LoginView, LogoutView , ChangePasswordView , GetUserData , UpdateUserData , UpdateUserRole , GetAllPersonInSystem
-from .views import EmployeeListView, EmployeeDetailView, EmployeeNameIdView , GetAllRoleUserOnly , CreateEmployeeView
+from .views import EmployeeListView, EmployeeDetailView, EmployeeNameIdView , GetAllRoleUserOnly , CreateEmployeeView , GetUserDetails
 # from .views import PasswordResetRequestView, PasswordResetVerifyView, PasswordResetView
 
 
@@ -17,6 +17,7 @@ urlpatterns = [
     path('update-user-data', UpdateUserData.as_view(), name='update-user-data'),  # Update user data endpoint
     path('role-update/<int:pk>', UpdateUserRole.as_view(), name='role-update'),  # Role update endpoint
     path('all-person-in-system', GetAllPersonInSystem.as_view(), name='all-person-in-system'),  # Get all person in system endpoint
+    path('get-user-details/<int:pk>', GetUserDetails.as_view(), name='get-user-details'),  # Get user details endpoint
     # Endpoint to get all employees 
     path('employees', EmployeeListView.as_view(), name='employee-list'),
     # Endpoint to create a new employee

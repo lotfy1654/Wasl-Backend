@@ -163,7 +163,6 @@ class EmployeeNameIdSerializer(serializers.ModelSerializer):
 
 
 
-
 # Forget Password Serializers
 # class PasswordResetRequestSerializer(serializers.Serializer):
 #     email = serializers.EmailField()

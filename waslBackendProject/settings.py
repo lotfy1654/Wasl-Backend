@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-!ydksbv^4xa_jpo6q$rix7q@(e)zjy8n7mfr$8y7)jjkl&0-qw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["web-production-98c0.up.railway.app"]
+ALLOWED_HOSTS = ["web-production-98c0.up.railway.app" , "127.0.0.1" , "localhost"]
 
 APPEND_SLASH = True
 
@@ -64,13 +64,14 @@ INSTALLED_APPS = [
 CORS_ALLOWED_ORIGINS = [
     "https://example.com",
     "http://localhost:3000",
+    "https://wasl-front.vercel.app"
 ]
 
 
 
 
 # Use CORS_ALLOW_ALL_ORIGINS = True for unrestricted access (not recommended for production).
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Use this only during local development
 
 
 

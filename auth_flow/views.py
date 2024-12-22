@@ -261,23 +261,30 @@ class CreateEmployeeView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class EmployeeDetailView(APIView):
     
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
     def get(self, request, pk):
-
+        # Check if the user is an Admin
         if request.user.role != 'Admin':
             return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
         
         try:
+            # Fetch the employee by primary key (pk)
             employee = Employee.objects.get(pk=pk)
-            serializer = EmployeeSerializer(employee)
+            
+            # Pass 'request' context to serializer to generate absolute URLs for profile picture
+            serializer = EmployeeSerializer(employee, context={'request': request})
+            
+            # Return the serialized data as the response
             return Response(serializer.data)
         except Employee.DoesNotExist:
+            # Handle the case where the employee does not exist
             return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        
     def put(self, request, pk):
         
         if request.user.role != 'Admin':
@@ -342,7 +349,11 @@ class GetAllRoleUserOnly(APIView):
         serializer = GetUserSerializer(users, many=True, context={'request': request})
         return Response(serializer.data)
 
-
+class GetUserDetails(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = GetUserSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
 
 # Forgot Password View (Send OTP)
