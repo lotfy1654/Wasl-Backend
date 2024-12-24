@@ -36,16 +36,22 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Create the user with the provided data
+
+        profile_picture = validated_data.pop('profile_picture', None) # Remove profile_picture from validated_data if present and store it in a separate variable       
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             phone=validated_data['phone'],
-            profile_picture=validated_data['profile_picture'],
+            # profile_picture=validated_data['profile_picture'],
             country=validated_data['country'],
             date_of_birth=validated_data['date_of_birth']
         )
+            # If profile_picture is provided, set it
+        if profile_picture:
+            user.profile_picture = profile_picture
+        
         user.set_password(validated_data['password'])  # Hash the password
         user.save()
         return user
@@ -108,7 +114,6 @@ class GetAllPersonInSystemSerializers(serializers.ModelSerializer):
         return None
 
 
-
 class UpdateUserSerializer(serializers.ModelSerializer):
     """
     Serializer for updating user details.
@@ -162,6 +167,10 @@ class EmployeeNameIdSerializer(serializers.ModelSerializer):
         fields = ['id', 'user']
 
 
+class UpdateEmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = '__all__'
 
 # Forget Password Serializers
 # class PasswordResetRequestSerializer(serializers.Serializer):

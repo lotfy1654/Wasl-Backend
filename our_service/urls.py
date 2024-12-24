@@ -18,7 +18,8 @@ from .views import (
     ServiceForHomeView,
     ServiceForSinglePageByIdView,
     AllserviceNameIDOnlyView,
-    ServiceAddImageView
+    ServiceAddImageView,
+    ServiceOrderListViewEmployee
 )
 
 urlpatterns = [
@@ -44,5 +45,6 @@ urlpatterns = [
     path('orders/my-orders', UserServiceOrderListView.as_view(), name='user-order-list'), # List all orders of the logged-in user
     path('orders/steps/<int:pk>/update', UpdateOrderStepStatusView.as_view(), name='update-step-status'), # Step ID to update the status of the step
     path('orders/steps/<int:pk>/update/manager-admin', UpdateOrderStepStatusViewManagerAdmin.as_view(), name='update-step-status-manager-admin'), # Step ID to update the status of the step
+    path('orders/employee-orders', ServiceOrderListViewEmployee.as_view(), name='employee-order-list'), # List all orders of the logged-in employee
 ]
 

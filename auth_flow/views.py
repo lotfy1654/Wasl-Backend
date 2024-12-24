@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import RegisterSerializer, LoginSerializer , ChangePasswordSerializer ,GetUserSerializer , UpdateUserSerializer , RoleUpdateSerializer  , GetAllPersonInSystemSerializers
-from .serializers import EmployeeSerializer, EmployeeNameIdSerializer , CreateEmployeeSerializer
+from .serializers import EmployeeSerializer, EmployeeNameIdSerializer , CreateEmployeeSerializer , UpdateEmployeeSerializer
 # from .serializers import (
 #     PasswordResetRequestSerializer,
 #     PasswordResetVerifySerializer,
@@ -249,6 +249,8 @@ class EmployeeListView(APIView):
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         return Response(serializer.data)
 
+
+
 class CreateEmployeeView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -269,7 +271,7 @@ class EmployeeDetailView(APIView):
     
     def get(self, request, pk):
         # Check if the user is an Admin
-        if request.user.role != 'Admin':
+        if request.user.role != 'Admin' and request.user.role != 'Manager':
             return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
         
         try:
@@ -285,20 +287,6 @@ class EmployeeDetailView(APIView):
             # Handle the case where the employee does not exist
             return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
         
-    def put(self, request, pk):
-        
-        if request.user.role != 'Admin':
-            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
-        
-        try:
-            employee = Employee.objects.get(pk=pk)
-            serializer = EmployeeSerializer(employee, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Employee.DoesNotExist:
-            return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
         
@@ -317,7 +305,25 @@ class EmployeeDetailView(APIView):
             return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
+class UpdateEmployeeView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    def put(self, request, pk):
+        
+        if request.user.role != 'Admin' and request.user.role != 'Manager':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            employee = Employee.objects.get(pk=pk)
+        except Employee.DoesNotExist:
+            return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UpdateEmployeeSerializer(employee, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EmployeeNameIdView(APIView):
@@ -334,6 +340,19 @@ class EmployeeNameIdView(APIView):
         serializer = EmployeeNameIdSerializer(employees, many=True)
         return Response(serializer.data)
 
+
+# Get Full Data For Employee Login
+class GetFullDataForEmployeeForLoggedIn(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        if request.user.role != 'Manager':
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+        
+        employee = Employee.objects.get(user=request.user)
+        serializer = EmployeeSerializer(employee , context={'request': request}) # Pass the request object in context
+        return Response(serializer.data)
 
 
 class GetAllRoleUserOnly(APIView):

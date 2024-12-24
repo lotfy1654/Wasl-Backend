@@ -117,6 +117,33 @@ class ServiceOrderListView(generics.ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+# Get All Orders Employee Has
+class ServiceOrderListViewEmployee(generics.ListAPIView):
+    serializer_class = ServiceOrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        If the user is an admin, return all orders.
+        Otherwise, return orders for the authenticated user.
+        """
+        employee = Employee.objects.get(user=self.request.user)
+        orders = ServiceOrder.objects.filter(assigned_employee=employee)
+        if orders.count() == 0:  # If no orders are found, return a 404 response
+            raise NotFound("No orders found")
+        return orders
+
+    def list(self, request, *args, **kwargs):
+        """
+        Custom list method to handle returning data.
+        This method ensures we handle both 404 cases and normal responses properly.
+        """
+        queryset = self.get_queryset()
+        if queryset.count() == 0:
+            return Response({"error": "No orders found"}, status=404)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 # Retrieve a single order (Admin and User who created it)
 class ServiceOrderDetailView(generics.RetrieveAPIView):
