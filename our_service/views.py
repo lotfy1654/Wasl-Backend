@@ -19,8 +19,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import NotFound
 
 
-
-
 # Home Page Views
 class ServiceForHomeView(generics.ListAPIView):
     queryset = Service.objects.all()
